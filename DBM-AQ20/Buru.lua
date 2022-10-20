@@ -35,30 +35,35 @@ function mod:OnCombatEnd()
 	self:UnregisterShortTermEvents()
 end
 
-function mod:SPELL_AURA_APPLIED(args)
-	if args.spellId == 96 then
-		local amount = args.amount or 1
-		timerDismember:Start(args.destName)
-		if amount >= 5 then
-			if args:IsPlayer() then
-				specWarnDismember:Show(amount)
-				specWarnDismember:Play("stackhigh")
-			elseif not DBM:UnitDebuff("player", args.spellName) and not UnitIsDeadOrGhost("player") then
-				specWarnDismemberTaunt:Show(args.destName)
-				specWarnDismemberTaunt:Play("tauntboss")
+do
+	local Dismember = DBM:GetSpellInfo(96)
+	function mod:SPELL_AURA_APPLIED(args)
+		--if args.spellId == 96 then
+		if args.spellName == Dismember then
+			local amount = args.amount or 1
+			timerDismember:Start(args.destName)
+			if amount >= 5 then
+				if args:IsPlayer() then
+					specWarnDismember:Show(amount)
+					specWarnDismember:Play("stackhigh")
+				elseif not DBM:UnitDebuff("player", args.spellName) and not UnitIsDeadOrGhost("player") then
+					specWarnDismemberTaunt:Show(args.destName)
+					specWarnDismemberTaunt:Play("tauntboss")
+				else
+					WarnDismember:Show(args.destName, amount)
+				end
 			else
 				WarnDismember:Show(args.destName, amount)
 			end
-		else
-			WarnDismember:Show(args.destName, amount)
 		end
 	end
-end
-mod.SPELL_AURA_APPLIED_DOSE = mod.SPELL_AURA_APPLIED
+	mod.SPELL_AURA_APPLIED_DOSE = mod.SPELL_AURA_APPLIED
 
-function mod:SPELL_AURA_REMOVED(args)
-	if args.spellId == 96 then
-		timerDismember:Stop(args.destName)
+	function mod:SPELL_AURA_REMOVED(args)
+		--if args.spellId == 96 then
+		if args.spellName == Dismember then
+			timerDismember:Stop(args.destName)
+		end
 	end
 end
 
