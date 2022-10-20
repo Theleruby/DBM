@@ -20,11 +20,12 @@ local warnMutateBug			= mod:NewSpellAnnounce(802, 2, nil, false)
 
 local specWarnStrike		= mod:NewSpecialWarningDefensive(26613, nil, nil, nil, 1, 2)
 --local specWarnExplodeBug	= mod:NewSpecialWarningMove(804, nil, nil, nil, 1, 2)
-local specWarnGTFO			= mod:NewSpecialWarningGTFO(26607, nil, nil, nil, 8, 2)
+local specWarnGTFO			= mod:NewSpecialWarningGTFO(26607, nil, nil, nil, 1, 2)
 
-local timerTeleport			= mod:NewCDTimer(29.2, 800, nil, nil, nil, 6, nil, nil, true, 1, 4)--29.2-40.2
-local timerExplodeBugCD		= mod:NewCDTimer(4.9, 804, nil, false, nil, 1)--4.9-9
-local timerMutateBugCD		= mod:NewCDTimer(11, 802, nil, false, nil, 1)--11-16
+local timerTeleportCD		= mod:NewCDTimer(30, 800, nil, nil, nil, 6, nil, nil, true)--29.2-40.2
+
+local timerExplodeBugCD		= mod:NewCDTimer(4.5, 804, nil, false, nil, 1)--4.9-9
+local timerMutateBugCD		= mod:NewCDTimer(10, 802, nil, false, nil, 1)--11-16
 --local timerStrikeCD		= mod:NewCDTimer(9.7, 26613, nil, "Tank", nil, 5, nil, DBM_COMMON_L.TANK_ICON)--9.7-42.6
 
 local berserkTimer			= mod:NewBerserkTimer(900)
@@ -34,13 +35,15 @@ local berserkTimer			= mod:NewBerserkTimer(900)
 function mod:OnCombatStart(delay)
 	--timerStrikeCD:Start(14.2-delay)
 	berserkTimer:Start()
-	timerTeleport:Start(-delay)
+	timerTeleportCD:Start(30-delay)
 	if self.Options.NPAuraOnMutateBug then
 		DBM:FireEvent("BossMod_EnableHostileNameplates")
 	end
+	timerMutateBugCD:Start(16-delay)
 end
 
 function mod:OnCombatEnd()
+	timerTeleportCD:Stop()
 --	if self.Options.NPAuraOnMutateBug then
 --		DBM.Nameplate:Hide(true, nil, nil, nil, true, true)
 --	end
@@ -51,7 +54,7 @@ end
 function mod:SPELL_AURA_APPLIED(args)
 	if args:IsSpellID(799, 800) and self:AntiSpam(5, 1) then
 		warnTeleport:Show()
-		timerTeleport:Start()
+		timerTeleportCD:Start()
 	--elseif args.spellId == 26613 and not self:IsTrivial(80) then
 	elseif args.spellId == 26613 then
 		if args:IsPlayer() then

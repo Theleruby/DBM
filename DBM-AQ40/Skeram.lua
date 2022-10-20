@@ -26,6 +26,8 @@ local warnSummonSoon	= mod:NewSoonAnnounce(747, 2)
 
 local timerMindControl	= mod:NewBuffActiveTimer(20, 785, nil, nil, nil, 3)
 
+local timerMindControlCD	= mod:NewCDTimer(20, 785, nil, false)
+
 mod:AddSetIconOption("SetIconOnMC", 785, true, false, {4, 5, 6, 7, 8})
 
 local MCTargets = {}
@@ -36,6 +38,7 @@ function mod:OnCombatStart()
 	self.vb.splitCount = 0
 	table.wipe(MCTargets)
 	self.vb.MCIcon = 8
+	timerMindControlCD:Start(15)
 end
 
 local function warnMCTargets(self)
@@ -45,25 +48,30 @@ local function warnMCTargets(self)
 	self.vb.MCIcon = 8
 end
 
-function mod:SPELL_AURA_APPLIED(args)
-	if args.spellId == 785 then
-		MCTargets[#MCTargets + 1] = args.destName
-		self:Unschedule(warnMCTargets)
-		if self.Options.SetIconOnMC then
-			self:SetIcon(args.destName, self.vb.MCIcon)
+do
+	local TrueFulfillment = DBM:GetSpellInfo(785)
+	function mod:SPELL_AURA_APPLIED(args)
+		--if args.spellId == 785 then
+		if args.spellName == TrueFulfillment then
+			MCTargets[#MCTargets + 1] = args.destName
+			self:Unschedule(warnMCTargets)
+			if self.Options.SetIconOnMC then
+				self:SetIcon(args.destName, self.vb.MCIcon)
+			end
+			if #MCTargets >= 3 then
+				warnMCTargets(self)
+			else
+				self:Schedule(0.5, warnMCTargets, self)
+			end
+			self.vb.MCIcon = self.vb.MCIcon - 1
 		end
-		if #MCTargets >= 3 then
-			warnMCTargets(self)
-		else
-			self:Schedule(0.5, warnMCTargets, self)
-		end
-		self.vb.MCIcon = self.vb.MCIcon - 1
 	end
-end
 
-function mod:SPELL_AURA_REMOVED(args)
-	if args.spellId == 785 and self.Options.SetIconOnMC then
-		self:SetIcon(args.destName, 0)
+	function mod:SPELL_AURA_REMOVED(args)
+		--if args.spellId == 785 and self.Options.SetIconOnMC then
+		if args.spellName == TrueFulfillment and self.Options.SetIconOnMC then
+			self:SetIcon(args.destName, 0)
+		end
 	end
 end
 
@@ -73,14 +81,18 @@ function mod:SPELL_CAST_SUCCESS(args)
 	end
 end
 
-function mod:SPELL_SUMMON(args)
-	if args.spellId == 747 and self:AntiSpam(3, 2) then
-		warnSummon:Show()
+do
+	local SummonImages = DBM:GetSpellInfo(747)
+	function mod:SPELL_SUMMON(args)
+		--if args.spellId == 747 then
+		if args.spellName == SummonImages and self:AntiSpam(3, 2) then
+			warnSummon:Show()
+		end
 	end
-end
+end	
 
 function mod:UNIT_HEALTH(uId)
-	if self:GetUnitCreatureId(uId) == 15263 then
+	if self:GetUnitCreatureId(uId) == 15263 and UnitHealthMax(uId) and UnitHealthMax(uId) > 0 then
 		local percent = UnitHealth(uId) / UnitHealthMax(uId) * 100
 		if percent <= 81 and percent >= 77 and self.vb.splitCount < 1 then
 			warnSummonSoon:Show()
