@@ -37,7 +37,7 @@ L:SetGeneralLocalization({
 })
 
 L:SetWarningLocalization({
-	WarnSimulKill	= "First add down - Resurrection in ~15 seconds"
+	WarnSimulKill	= "First add down - Resurrection in 10 seconds"
 })
 
 L:SetTimerLocalization({
@@ -76,6 +76,9 @@ L:SetGeneralLocalization({
 	name = "Hakkar the Soulflayer"
 })
 
+L:SetMiscLocalization({
+	Pull		= "PRIDE HERALDS THE END OF YOUR WORLD.  COME, MORTALS!  FACE THE WRATH OF THE SOULFLAYER!"
+})
 -------------------
 --  Bloodlord  --
 -------------------
@@ -86,7 +89,7 @@ L:SetGeneralLocalization({
 })
 
 L:SetMiscLocalization({
-	Bloodlord	= "Bloodlord Mandokir",
+	Bloodlord 	= "Bloodlord Mandokir",
 	Ohgan		= "Ohgan",
 	GazeYell	= "I'm watching you"
 })
