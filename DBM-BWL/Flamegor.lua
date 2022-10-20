@@ -21,44 +21,53 @@ local warnFrenzy			= mod:NewSpellAnnounce(23342, 3, nil, "Tank|RemoveEnrage|Heal
 
 local specWarnFrenzy		= mod:NewSpecialWarningDispel(23342, "RemoveEnrage", nil, nil, 1, 6)
 
-local timerWingBuffet		= mod:NewCDTimer(31, 23339, nil, nil, nil, 2)
-local timerShadowFlameCD	= mod:NewCDTimer(14, 22539, nil, false)--14-21
-local timerFrenzy			= mod:NewBuffActiveTimer(10, 23342, nil, "Tank|RemoveEnrage|Healer", 5, 5, nil, DBM_COMMON_L.ENRAGE_ICON)
+local timerWingBuffet		= mod:NewCDTimer(30, 23339, nil, nil, nil, 2)
+local timerShadowFlameCD	= mod:NewCDTimer(15, 22539, nil, false)--14-21
+local timerFrenzy	 		= mod:NewBuffActiveTimer(10, 23342, nil, "Tank|RemoveEnrage|Healer", 5, 5, nil, DBM_COMMON_L.ENRAGE_ICON)
 
 function mod:OnCombatStart(delay)
 	timerShadowFlameCD:Start(18-delay)
 	timerWingBuffet:Start(30-delay)
 end
 
-function mod:SPELL_CAST_START(args)--did not see ebon use any of these abilities
-	if args.spellId == 23339 then
-		warnWingBuffet:Show()
-		timerWingBuffet:Start()
-	elseif args.spellId == 22539 then
-		warnShadowFlame:Show()
-		timerShadowFlameCD:Start()
-	end
-end
-
-function mod:SPELL_CAST_SUCCESS(args)
-	if args.spellId == 23342 and args:IsSrcTypeHostile() then
-		if self.Options.SpecWarn23342dispel then
-			specWarnFrenzy:Show(args.sourceName)
-			specWarnFrenzy:Play("enrage")
-		else
-			warnFrenzy:Show()
+do
+	local WingBuffet, ShadowFlame = DBM:GetSpellInfo(23339), DBM:GetSpellInfo(22539)
+	function mod:SPELL_CAST_START(args)--did not see ebon use any of these abilities
+		--if args.spellId == 23339 then
+		if args.spellName == WingBuffet then
+			warnWingBuffet:Show()
+			timerWingBuffet:Start()
+		--elseif args.spellId == 22539 then
+		elseif args.spellName == ShadowFlame then
+			warnShadowFlame:Show()
+			timerShadowFlameCD:Start()
 		end
 	end
 end
 
-function mod:SPELL_AURA_APPLIED(args)--did not see ebon use any of these abilities
-	if args.spellId == 23342 then
-		timerFrenzy:Start()
+do
+	local Frenzy = DBM:GetSpellInfo(23342)
+	function mod:SPELL_CAST_SUCCESS(args)
+		--if args.spellId == 23342 then
+		if args.spellName == Frenzy and args:IsSrcTypeHostile() then
+			if self.Options.SpecWarn23342dispel then
+				specWarnFrenzy:Show(args.sourceName)
+				specWarnFrenzy:Play("enrage")
+			else
+				warnFrenzy:Show()
+			end
+		end
 	end
-end
-
-function mod:SPELL_AURA_REMOVED(args)--did not see ebon use any of these abilities
-	if args.spellId == 23342 then
-		timerFrenzy:Stop()
+	function mod:SPELL_AURA_APPLIED(args)--did not see ebon use any of these abilities
+		--if args.spellId == 23342 then
+		if args.spellName == Frenzy then
+			timerFrenzy:Start()
+		end
+	end
+	function mod:SPELL_AURA_REMOVED(args)--did not see ebon use any of these abilities
+		--if args.spellId == 23342 then
+		if args.spellName == Frenzy then
+			timerFrenzy:Stop()
+		end
 	end
 end

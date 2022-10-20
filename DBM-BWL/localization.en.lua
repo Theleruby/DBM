@@ -22,9 +22,8 @@ L:SetMiscLocalization({
 	YellEgg1 = "You'll pay for forcing me to do this!",
 	YellEgg2 = "Fools! These eggs are more precious than you know!",
 	YellEgg3 = "No - not another one! I'll have your heads for this atrocity!",
-	YellPull	= "Intruders have breached the hatchery! Sound the alarm! Protect the eggs at all costs!\r\n"--Yes this yell actually has a return and new line in it. as grabbed by transcriptor
+	YellPull 	= "Intruders have breached the hatchery! Sound the alarm! Protect the eggs at all costs!\n" --chromiecraft only has the newline
 })
-
 -------------------
 --  Vaelastrasz  --
 -------------------
@@ -180,11 +179,20 @@ L:SetMiscLocalization({
 	YellPaladin	= "Paladins... I've heard you have many lives. Show me.",
 	YellDruid	= "Druids and your silly shapeshifting. Lets see it in action!",
 	YellPriest	= "Priests! If you're going to keep healing like that, we might as well make it a little more interesting!",
-	YellWarrior	= "Warriors, I know you can hit harder than that! Lets see it!",
+	YellWarrior	= "Warriors, I know you can hit harder than that! Let's see it!",
 	YellRogue	= "Rogues? Stop hiding and face me!",
 	YellWarlock	= "Warlocks, you shouldn't be playing with magic you don't understand. See what happens?",
 	YellHunter	= "Hunters and your annoying pea-shooters!",
 	YellMage	= "Mages too? You should be more careful when you play with magic...",
 	YellDK		= "Death Knights... get over here!",
 	YellMonk	= "Monk"
+})
+
+-----------------
+-- BWL: Trash  --
+-----------------
+L = DBM:GetModLocalization("BWLTrash")
+
+L:SetGeneralLocalization({
+	name = "BWL: Trash"
 })
