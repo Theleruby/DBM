@@ -3636,6 +3636,10 @@ do
 	end
 
 	local function HandleVersion(revision, version, displayVersion, sender)
+		-- disabled intentionally
+	end
+
+	local function DontHandleVersion(revision, version, displayVersion, sender)
 		if version > DBM.Revision then -- Update reminder
 			if version > currentFullDate() then return end -- ignore versions higher than current date to prevent abuse
 			if #newerVersionPerson < 4 then
