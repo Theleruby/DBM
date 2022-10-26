@@ -28,7 +28,7 @@ local timerSubmerge		= mod:NewTimer(180, "TimerSubmerge", "Interface\\AddOns\\DB
 local timerEmerge		= mod:NewTimer(90, "TimerEmerge", "Interface\\AddOns\\DBM-Core\\textures\\CryptFiendUnBurrow.blp", nil, nil, 6, nil, nil, 1, 5)
 local timerCombatStart	= mod:NewTimer(80, "timerCombatStart", "Interface\\Icons\\Ability_Warrior_OffensiveStance", nil, nil, 6, nil, nil) -- 72.5
 
-mod:AddRangeFrameOption("20", nil, "-Melee")
+mod:AddRangeFrameOption("20") -- Blizz 18, AzerothCore +2 for regular chars, or 4 for male tauren/draenei
 
 mod.vb.addLeft = 0
 mod.vb.ragnarosEmerged = true
@@ -42,7 +42,7 @@ function mod:OnCombatStart(delay)
 	timerWrathRag:Start(30-delay)
 	timerSubmerge:Start(180-delay)
 	if self.Options.RangeFrame then
-		DBM.RangeCheck:Show(20)
+		DBM.RangeCheck:Show(18+2) -- Blizz 10, AzerothCore +2 for regular chars, or 4 for male tauren/draenei
 	end
 end
 

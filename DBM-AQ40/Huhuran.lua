@@ -33,7 +33,7 @@ local timerPoison		= mod:NewBuffFadesTimer(8, 26053)
 local timerFrenzyCD		= mod:NewCDTimer(12, 26051, nil, false, 3, 5, nil, DBM_COMMON_L.TANK_ICON..DBM_COMMON_L.HEALER_ICON)--Off by default do to ridiculous variation
 local timerAcid			= mod:NewTargetTimer(30, 26050, nil, "Tank", 3, 5, nil, DBM_COMMON_L.TANK_ICON)
 
-mod:AddRangeFrameOption("18", nil, "-Melee")
+mod:AddRangeFrameOption("20", nil, "-Melee") -- Blizz 18, AzerothCore +2 for regular chars, or 4 for male tauren/draenei
 
 mod.vb.prewarn_berserk = false
 local StingTargets = {}
@@ -45,7 +45,7 @@ function mod:OnCombatStart(delay)
 	timerPoisonCD:Start(10-delay)
 	timerStingCD:Start(25-delay)
 	if self.Options.RangeFrame then
-		DBM.RangeCheck:Show(18)
+		DBM.RangeCheck:Show(18+2) -- Blizz 18, AzerothCore +2 for regular chars, or 4 for male tauren/draenei
 	end
 end
 

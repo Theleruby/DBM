@@ -31,14 +31,14 @@ local timerFire			= mod:NewTargetTimer(8, 23860, nil, "RemoveMagic|Healer", nil,
 local specWarnCloudYou	= mod:NewSpecialWarningYou(23861, nil, nil, nil, 3, 2)
 local specWarnCloudNearby	= mod:NewSpecialWarningYou(23861, nil, nil, nil, 3, 2)
 
-mod:AddRangeFrameOption("10")
+mod:AddRangeFrameOption("12") -- Blizz 10, AzerothCore +2 for regular chars, or 4 for male tauren/draenei
 
 mod.vb.prewarn_Phase2 = false
 
 function mod:OnCombatStart(delay)
 	self.vb.prewarn_Phase2 = false
 	if self.Options.RangeFrame then
-		DBM.RangeCheck:Show(10)
+		DBM.RangeCheck:Show(10+2) -- Blizz 10, AzerothCore +2 for regular chars, or 4 for male tauren/draenei
 	end
 end
 
