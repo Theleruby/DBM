@@ -50,6 +50,7 @@ function mod:OnCombatStart(delay, yellTriggered)
 	table.wipe(addsGuidCheck)
 	self.vb.addLeft = 42
 	self:SetStage(1)
+	self.vb.phase = 1
 	timerAddsSpawn:Start(15-delay)
 	timerMindControlCD:Start(30-delay)
 	timerSBVolleyCD:Start(13-delay)
@@ -94,21 +95,6 @@ do
 	end
 end
 
-function mod:PARTY_KILL(args)
-	local guid = args.destGUID
-	local cid = self:GetCIDFromGUID(guid)
-	if cid == 14264 or cid == 14263 or cid == 14261 or cid == 14265 or cid == 14262 or cid == 14302 then--Red, Bronze, Blue, Black, Green, Chromatic
-		if not addsGuidCheck[guid] then
-			addsGuidCheck[guid] = true
-			self.vb.addLeft = self.vb.addLeft - 1
-			--40, 35, 30, 25, 20, 15, 12, 9, 6, 3
-			if self.vb.addLeft >= 15 and (self.vb.addLeft % 5 == 0) or self.vb.addLeft >= 1 and (self.vb.addLeft % 3 == 0) and self.vb.addLeft < 15 then
-				WarnAddsLeft:Show(self.vb.addLeft)
-			end
-		end
-	end
-end
-
 function mod:UNIT_HEALTH(uId)
 	if UnitHealth(uId) / UnitHealthMax(uId) <= 0.25 and self:GetUnitCreatureId(uId) == 11583 and self.vb.phase < 2.5 then
 		warnPhase3Soon:Show()
@@ -119,19 +105,20 @@ end
 do
 	local playerName = UnitName("player")
 	local function blizzardAreAssholes(self, msg, arg, sender)
-		if sender and self:AntiSpam(2, msg) then
+		if sender and self:AntiSpam(5, msg) then
 			--Do nothing, this is just an antispam threshold for syncing
 		end
 		if msg == "Phase" and sender then
 			local phase = tonumber(arg) or 0
-			if phase == 2 then
+			if phase == 2 and self.vb.phase < 2 then
 				self:SetStage(2)
+				self.vb.phase = 2
 				timerSBVolleyCD:Stop()
 				timerMindControlCD:Stop()
-				timerPhase:Start(10) -- phase start are estimates, will have to correct when raiding bwl again.
-				timerShadowFlameCD:Start(10+12)
-				timerFearNext:Start(10+25)
-				timerClassCall:Start(10+30)
+				timerPhase:Start(15) -- phase start are estimates, will have to correct when raiding bwl again.
+				timerShadowFlameCD:Start(15+12)
+				timerFearNext:Start(15+25)
+				timerClassCall:Start(15+30)
 			elseif phase == 3 then
 				self:SetStage(3)
 			end
@@ -150,6 +137,25 @@ do
 		end
 	end
 
+	function mod:PARTY_KILL(args)
+		local guid = args.destGUID
+		local cid = self:GetCIDFromGUID(guid)
+		if cid == 14264 or cid == 14263 or cid == 14261 or cid == 14265 or cid == 14262 or cid == 14302 then--Red, Bronze, Blue, Black, Green, Chromatic
+			if not addsGuidCheck[guid] then
+				addsGuidCheck[guid] = true
+				self.vb.addLeft = self.vb.addLeft - 1
+				--40, 35, 30, 25, 20, 15, 12, 9, 6, 3, 2, 1
+				if (self.vb.addLeft >= 15 and (self.vb.addLeft % 5 == 0)) or (self.vb.addLeft >= 1 and (self.vb.addLeft % 3 == 0) and self.vb.addLeft < 15) or (self.vb.addLeft == 2) or (self.vb.addLeft == 1) then
+					WarnAddsLeft:Show(self.vb.addLeft)
+				end
+				if self.vb.addLeft == 0 then
+					self:SendSync("Phase", 2)
+					blizzardAreAssholes(self, "Phase", "2", playerName)
+				end
+			end
+		end
+	end
+	
 	function mod:CHAT_MSG_MONSTER_YELL(msg)
 		if msg == L.YellDK or msg:find(L.YellDK) then--This mod will likely persist all the way til Classic WoTLK, don't remove DK
 			self:SendSync("ClassCall", "DEATHKNIGHT")
