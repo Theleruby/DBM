@@ -36,6 +36,7 @@ local specwarnClassCall		= mod:NewSpecialWarning("specwarnClassCall", nil, nil, 
 local timerPhase			= mod:NewPhaseTimer(15)
 local timerShadowFlameCD	= mod:NewCDTimer(12, 22539, nil, nil)
 local timerClassCall		= mod:NewTimer(30, "TimerClassCall", "136116", nil, nil, 5, nil, true)
+
 local timerFearNext			= mod:NewCDTimer(25, 22686, nil, nil, 3, 2)--26-42.5
 local timerAddsSpawn		= mod:NewTimer(10, "TimerAddsSpawn", 19879, nil, nil, 1)
 local timerMindControlCD	= mod:NewCDTimer(24, 22667, nil, nil, nil, 6, nil, nil, true)
@@ -79,6 +80,7 @@ do
 			if self:CheckDispelFilter("curse") then
 				specwarnVeilShadow:Show(args.destName)
 				specwarnVeilShadow:Play("dispelnow")
+				timerMindControlCD:Stop() -- in case phase p2 wasnt recognized properly
 			end
 		end
 	end
@@ -117,7 +119,7 @@ end
 do
 	local playerName = UnitName("player")
 	local function blizzardAreAssholes(self, msg, arg, sender)
-		if sender and self:AntiSpam(5, msg) then
+		if sender and self:AntiSpam(2, msg) then
 			--Do nothing, this is just an antispam threshold for syncing
 		end
 		if msg == "Phase" and sender then
@@ -126,10 +128,10 @@ do
 				self:SetStage(2)
 				timerSBVolleyCD:Stop()
 				timerMindControlCD:Stop()
-				timerPhase:Start(15)--15 til encounter start fires, not til actual land?
-				timerShadowFlameCD:Start(15+12)
-				timerFearNext:Start(15+25)
-				timerClassCall:Start(15+30)
+				timerPhase:Start(10) -- phase start are estimates, will have to correct when raiding bwl again.
+				timerShadowFlameCD:Start(10+12)
+				timerFearNext:Start(10+25)
+				timerClassCall:Start(10+30)
 			elseif phase == 3 then
 				self:SetStage(3)
 			end
@@ -180,6 +182,9 @@ do
 			self:SendSync("ClassCall", "WARRIOR")
 			blizzardAreAssholes(self, "ClassCall", "WARRIOR", playerName)
 		elseif (msg == L.YellP2 or msg:find(L.YellP2)) and self:AntiSpam(5, "Phase") then
+			self:SendSync("Phase", 2)
+			blizzardAreAssholes(self, "Phase", "2", playerName)
+		elseif (msg == L.YellP2CC or msg:find(L.YellP2CC)) and self:AntiSpam(5, "Phase") then
 			self:SendSync("Phase", 2)
 			blizzardAreAssholes(self, "Phase", "2", playerName)
 		elseif (msg == L.YellP3 or msg:find(L.YellP3)) and self:AntiSpam(5, "Phase") then
