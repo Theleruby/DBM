@@ -35,7 +35,8 @@ local specwarnClassCall		= mod:NewSpecialWarning("specwarnClassCall", nil, nil, 
 
 local timerPhase			= mod:NewPhaseTimer(15)
 local timerShadowFlameCD	= mod:NewCDTimer(12, 22539, nil, nil)
-local timerClassCall		= mod:NewTimer(30, "TimerClassCall", "136116", nil, nil, 5, nil, nil, true)
+local timerClassCall		= mod:NewTimer(30, "TimerClassCall", "136116", nil, nil, 5, nil, true)
+
 local timerFearNext			= mod:NewCDTimer(25, 22686, nil, nil, 3, 2)--26-42.5
 local timerAddsSpawn		= mod:NewTimer(10, "TimerAddsSpawn", 19879, nil, nil, 1)
 local timerMindControlCD	= mod:NewCDTimer(24, 22667, nil, nil, nil, 6, nil, nil, true)
@@ -49,6 +50,7 @@ function mod:OnCombatStart(delay, yellTriggered)
 	table.wipe(addsGuidCheck)
 	self.vb.addLeft = 42
 	self:SetStage(1)
+	self.vb.phase = 1
 	timerAddsSpawn:Start(15-delay)
 	timerMindControlCD:Start(30-delay)
 	timerSBVolleyCD:Start(13-delay)
@@ -79,6 +81,7 @@ do
 			if self:CheckDispelFilter("curse") then
 				specwarnVeilShadow:Show(args.destName)
 				specwarnVeilShadow:Play("dispelnow")
+				timerMindControlCD:Stop() -- in case phase p2 wasnt recognized properly
 			end
 		end
 	end
@@ -88,21 +91,6 @@ do
 			specwarnShadowCommand:Show(args.destName)
 			specwarnShadowCommand:Play("findmc")
 			timerMindControlCD:Start(24)
-		end
-	end
-end
-
-function mod:PARTY_KILL(args)
-	local guid = args.destGUID
-	local cid = self:GetCIDFromGUID(guid)
-	if cid == 14264 or cid == 14263 or cid == 14261 or cid == 14265 or cid == 14262 or cid == 14302 then--Red, Bronze, Blue, Black, Green, Chromatic
-		if not addsGuidCheck[guid] then
-			addsGuidCheck[guid] = true
-			self.vb.addLeft = self.vb.addLeft - 1
-			--40, 35, 30, 25, 20, 15, 12, 9, 6, 3
-			if self.vb.addLeft >= 15 and (self.vb.addLeft % 5 == 0) or self.vb.addLeft >= 1 and (self.vb.addLeft % 3 == 0) and self.vb.addLeft < 15 then
-				WarnAddsLeft:Show(self.vb.addLeft)
-			end
 		end
 	end
 end
@@ -122,11 +110,12 @@ do
 		end
 		if msg == "Phase" and sender then
 			local phase = tonumber(arg) or 0
-			if phase == 2 then
+			if phase == 2 and self.vb.phase < 2 then
 				self:SetStage(2)
+				self.vb.phase = 2
 				timerSBVolleyCD:Stop()
 				timerMindControlCD:Stop()
-				timerPhase:Start(15)--15 til encounter start fires, not til actual land?
+				timerPhase:Start(15) -- phase start are estimates, will have to correct when raiding bwl again.
 				timerShadowFlameCD:Start(15+12)
 				timerFearNext:Start(15+25)
 				timerClassCall:Start(15+30)
@@ -148,6 +137,25 @@ do
 		end
 	end
 
+	function mod:PARTY_KILL(args)
+		local guid = args.destGUID
+		local cid = self:GetCIDFromGUID(guid)
+		if cid == 14264 or cid == 14263 or cid == 14261 or cid == 14265 or cid == 14262 or cid == 14302 then--Red, Bronze, Blue, Black, Green, Chromatic
+			if not addsGuidCheck[guid] then
+				addsGuidCheck[guid] = true
+				self.vb.addLeft = self.vb.addLeft - 1
+				--40, 35, 30, 25, 20, 15, 12, 9, 6, 3, 2, 1
+				if (self.vb.addLeft >= 15 and (self.vb.addLeft % 5 == 0)) or (self.vb.addLeft >= 1 and (self.vb.addLeft % 3 == 0) and self.vb.addLeft < 15) or (self.vb.addLeft == 2) or (self.vb.addLeft == 1) then
+					WarnAddsLeft:Show(self.vb.addLeft)
+				end
+				if self.vb.addLeft == 0 then
+					self:SendSync("Phase", 2)
+					blizzardAreAssholes(self, "Phase", "2", playerName)
+				end
+			end
+		end
+	end
+	
 	function mod:CHAT_MSG_MONSTER_YELL(msg)
 		if msg == L.YellDK or msg:find(L.YellDK) then--This mod will likely persist all the way til Classic WoTLK, don't remove DK
 			self:SendSync("ClassCall", "DEATHKNIGHT")
@@ -180,6 +188,9 @@ do
 			self:SendSync("ClassCall", "WARRIOR")
 			blizzardAreAssholes(self, "ClassCall", "WARRIOR", playerName)
 		elseif (msg == L.YellP2 or msg:find(L.YellP2)) and self:AntiSpam(5, "Phase") then
+			self:SendSync("Phase", 2)
+			blizzardAreAssholes(self, "Phase", "2", playerName)
+		elseif (msg == L.YellP2CC or msg:find(L.YellP2CC)) and self:AntiSpam(5, "Phase") then
 			self:SendSync("Phase", 2)
 			blizzardAreAssholes(self, "Phase", "2", playerName)
 		elseif (msg == L.YellP3 or msg:find(L.YellP3)) and self:AntiSpam(5, "Phase") then

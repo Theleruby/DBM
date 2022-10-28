@@ -38,7 +38,7 @@ local timerClawTentacle			= mod:NewTimer(8, "TimerClawTentacle", 26391, nil, nil
 local timerGiantClawTentacle	= mod:NewTimer(60, "TimerGiantClawTentacle", 26391, nil, nil, 1)
 local timerWeakened				= mod:NewTimer(45, "TimerWeakened", 28598)
 
-mod:AddRangeFrameOption("12")
+mod:AddRangeFrameOption("12") -- Blizz 10, AzerothCore +2 for regular chars, or 4 for male tauren/draenei
 mod:AddSetIconOption("SetIconOnEyeBeam", 26134, true, false, {1})
 mod:AddInfoFrameOption(nil, true)
 
@@ -97,7 +97,7 @@ function mod:OnCombatStart(delay)
 	timerDarkGlareCD:Start(50-delay)
 	self:ScheduleMethod(50-delay, "DarkGlare")
 	if self.Options.RangeFrame then
-		DBM.RangeCheck:Show(12)
+		DBM.RangeCheck:Show(10+2) -- Blizz 10, AzerothCore +2 for regular chars, or 4 for male tauren/draenei
 	end
 end
 

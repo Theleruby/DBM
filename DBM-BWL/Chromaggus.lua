@@ -47,17 +47,6 @@ function mod:OnCombatStart()
 	prewarn_P2 = false;
 end
 
-function mod:OnCombatEnd()
-	table.wipe(vulnerabilities)
-	self:UnregisterShortTermEvents()
---	if self.Options.NPAuraOnVulnerable  then
---		DBM.Nameplate:Hide(true, nil, nil, nil, true, true)--isGUID, unit, spellId, texture, force, isHostile, isFriendly
---	end
-	if self.Options.InfoFrame then
-		DBM.InfoFrame:Hide()
-	end
-end
-
 function mod:SPELL_CAST_START(args)
 	if args:IsSpellID(23308, 23310, 23313, 23315, 23187) then
 		warnBreath:Show(args.spellName)
