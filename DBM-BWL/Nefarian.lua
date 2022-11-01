@@ -35,7 +35,7 @@ local specwarnClassCall		= mod:NewSpecialWarning("specwarnClassCall", nil, nil, 
 
 local timerPhase			= mod:NewPhaseTimer(15)
 local timerShadowFlameCD	= mod:NewCDTimer(12, 22539, nil, nil)
-local timerClassCall		= mod:NewTimer(30, "TimerClassCall", "136116", nil, nil, 5, nil, true)
+local timerClassCall		= mod:NewTimer(30, "TimerClassCall", "136116", nil, nil, 5)
 
 local timerFearNext			= mod:NewCDTimer(25, 22686, nil, nil, 3, 2)--26-42.5
 local timerAddsSpawn		= mod:NewTimer(10, "TimerAddsSpawn", 19879, nil, nil, 1)
@@ -148,10 +148,10 @@ do
 				if (self.vb.addLeft >= 15 and (self.vb.addLeft % 5 == 0)) or (self.vb.addLeft >= 1 and (self.vb.addLeft % 3 == 0) and self.vb.addLeft < 15) or (self.vb.addLeft == 2) or (self.vb.addLeft == 1) then
 					WarnAddsLeft:Show(self.vb.addLeft)
 				end
-				if self.vb.addLeft == 0 then
-					self:SendSync("Phase", 2)
-					blizzardAreAssholes(self, "Phase", "2", playerName)
-				end
+--				if self.vb.addLeft == 0 then
+--					self:SendSync("Phase", 2)
+--					blizzardAreAssholes(self, "Phase", "2", playerName)
+--				end
 			end
 		end
 	end
