@@ -193,6 +193,9 @@ do
 		elseif (msg == L.YellP2CC or msg:find(L.YellP2CC)) and self:AntiSpam(5, "Phase") then
 			self:SendSync("Phase", 2)
 			blizzardAreAssholes(self, "Phase", "2", playerName)
+		elseif (msg == L.YellP2CC2 or msg:find(L.YellP2CC2)) and self:AntiSpam(5, "Phase") then
+			self:SendSync("Phase", 2)
+			blizzardAreAssholes(self, "Phase", "2", playerName)
 		elseif (msg == L.YellP3 or msg:find(L.YellP3)) and self:AntiSpam(5, "Phase") then
 			self:SendSync("Phase", 3)
 			blizzardAreAssholes(self, "Phase", "3", playerName)
