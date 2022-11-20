@@ -246,7 +246,7 @@ function mod:UNIT_DIED(args)
 		timerDarkGlareCD:Stop()
 		timerEyeTentacle:Stop()
 		timerClawTentacle:Stop() -- Claw Tentacle never respawns in phase2
-		timerEyeTentacle:Start(37) -- 40.5
+		timerEyeTentacle:Start(33) -- 40.5
 		timerGiantClawTentacle:Start(11)
 		timerGiantEyeTentacle:Start(41)
 		self:UnscheduleMethod("DarkGlare")
