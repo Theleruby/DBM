@@ -50,7 +50,6 @@ function mod:OnCombatStart(delay, yellTriggered)
 	table.wipe(addsGuidCheck)
 	self.vb.addLeft = 42
 	self:SetStage(1)
-	self.vb.phase = 1
 	timerAddsSpawn:Start(15-delay)
 	timerMindControlCD:Start(30-delay)
 	timerSBVolleyCD:Start(13-delay)
@@ -112,7 +111,6 @@ do
 			local phase = tonumber(arg) or 0
 			if phase == 2 and self.vb.phase < 2 then
 				self:SetStage(2)
-				self.vb.phase = 2
 				timerSBVolleyCD:Stop()
 				timerMindControlCD:Stop()
 				timerPhase:Start(15) -- phase start are estimates, will have to correct when raiding bwl again.
@@ -148,10 +146,6 @@ do
 				if (self.vb.addLeft >= 15 and (self.vb.addLeft % 5 == 0)) or (self.vb.addLeft >= 1 and (self.vb.addLeft % 3 == 0) and self.vb.addLeft < 15) or (self.vb.addLeft == 2) or (self.vb.addLeft == 1) then
 					WarnAddsLeft:Show(self.vb.addLeft)
 				end
---				if self.vb.addLeft == 0 then
---					self:SendSync("Phase", 2)
---					blizzardAreAssholes(self, "Phase", "2", playerName)
---				end
 			end
 		end
 	end
