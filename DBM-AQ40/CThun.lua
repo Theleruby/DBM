@@ -31,7 +31,7 @@ local specWarnWeakened			= mod:NewSpecialWarning("SpecWarnWeakened", nil, nil, n
 local specWarnEyeBeam			= mod:NewSpecialWarningYou(26134, nil, nil, nil, 1, 2)
 local yellEyeBeam				= mod:NewYell(26134)
 
-local timerDarkGlareCD			= mod:NewNextTimer(90, 26029)
+local timerDarkGlareCD			= mod:NewNextTimer(39 + 46, 26029)
 local timerDarkGlare			= mod:NewBuffActiveTimer(39, 26029)
 local timerEyeTentacle			= mod:NewTimer(45, "TimerEyeTentacle", 126, nil, nil, 1)
 local timerGiantEyeTentacle		= mod:NewTimer(60, "TimerGiantEyeTentacle", 126, nil, nil, 1)
@@ -96,8 +96,8 @@ function mod:OnCombatStart(delay)
 	self.vb.phase = 1
 	timerClawTentacle:Start(8-delay)
 	timerEyeTentacle:Start(45-delay)
-	timerDarkGlareCD:Start(50-delay)
-	self:ScheduleMethod(50-delay, "DarkGlare")
+	timerDarkGlareCD:Start(46-delay)
+	self:ScheduleMethod(46-delay, "DarkGlare")
 	if self.Options.RangeFrame then
 		DBM.RangeCheck:Show(10+2) -- Blizz 10, AzerothCore +2 for regular chars, or 4 for male tauren/draenei
 	end
@@ -132,7 +132,7 @@ function mod:DarkGlare()
 	end
 	timerDarkGlare:Start()
 	timerDarkGlareCD:Start()
-	self:ScheduleMethod(90, "DarkGlare")
+	self:ScheduleMethod(39 + 46, "DarkGlare")
 	timerEyeTentacle:Start(39 + 45)
 end
 
@@ -250,6 +250,11 @@ function mod:UNIT_DIED(args)
 		timerGiantClawTentacle:Start(11)
 		timerGiantEyeTentacle:Start(41)
 		self:UnscheduleMethod("DarkGlare")
+--		if self.Options.InfoFrame and not DBM.InfoFrame:IsShown() then
+--			DBM.InfoFrame:SetHeader(L.Stomach)
+--			DBM.InfoFrame:Show(42, "function", updateInfoFrame, false, false)
+--			DBM.InfoFrame:SetColumns(1)
+--		end
 	elseif cid == 15802 then -- Flesh Tentacle
 		fleshTentacles[args.destGUID] = nil
 		diedTentacles[args.destGUID] = true
