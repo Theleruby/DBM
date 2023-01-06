@@ -71,6 +71,8 @@ function mod:SPELL_AURA_REMOVED(args)
 		timerHex:Stop(args.destName)
 	elseif args.spellId == 24053 and args:IsDestTypePlayer() then
 		timerHex2:Stop(args.destName)
+	elseif args.spellID == 24306 and args:IsDestTypePlayer() then
+		timerDelusion:Stop(args.destName)
 	end
 end
 

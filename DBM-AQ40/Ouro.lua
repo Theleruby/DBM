@@ -28,6 +28,7 @@ local timerSubmerge		= mod:NewTimer(30, "TimerSubmerge", "Interface\\AddOns\\DBM
 local timerEmerge		= mod:NewTimer(30, "TimerEmerge", "Interface\\AddOns\\DBM-Core\\textures\\CryptFiendUnBurrow.blp", nil, nil, 6)
 local timerSweepCD		= mod:NewNextTimer(22, 26103, nil, nil, nil, 5, nil, DBM_COMMON_L.TANK_ICON)
 local timerBlastCD		= mod:NewNextTimer(20, 26102, nil, nil, nil, 2)
+local timerMounds		= mod:NewTimer(20, "Mounds", 26058)
 
 mod.vb.prewarn_Berserk = false
 mod.vb.Berserked = false
@@ -55,6 +56,7 @@ do
 			self.vb.Berserked = true
 			warnBerserk:Show()
 			timerSubmerge:Stop()
+			timerMounds:Start()
 		end
 	end
 end
