@@ -9908,6 +9908,11 @@ do
 			local countVoice, countVoiceMax = 0, self.countdownMax or 4
 			if self.option then
 				countVoice = self.mod.Options[self.option .. "CVoice"]
+				if type(countVoice) == "boolean" then
+					-- auto fix broken count voice value
+					self.mod.Options[self.option .. "CVoice"] = 1
+					countVoice = 1
+				end
 				if not self.fade and (type(countVoice) == "string" or countVoice > 0) then--Started without faded and has count voice assigned
 					DBM:Unschedule(playCountSound, id) -- Prevents count sound if timer is started again before timer expires
 					playCountdown(id, timer, countVoice, countVoiceMax)--timerId, timer, voice, count
