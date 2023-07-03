@@ -7,7 +7,7 @@ mod:SetModelID(15264) -- Anubisath Sentinel
 mod.isTrashMod = true
 
 mod:RegisterEvents(
-	--"ENCOUNTER_END",
+	"ENCOUNTER_END",
 	"SPELL_AURA_APPLIED 22997 25698 26079",
 	"SPELL_AURA_REMOVED 22997",
 	"SPELL_DAMAGE",
@@ -37,16 +37,20 @@ mod:RegisterShortTermEvents(
 mod:SendSync("IsAQ40Started")
 
 do-- Anubisath Plague/Explode - keep in sync - AQ40/AQ40Trash.lua AQ20/AQ20Trash.lua
-	local warnPlague					= mod:NewTargetNoFilterAnnounce(22997, 2)
-	local warnCauseInsanity				= mod:NewTargetNoFilterAnnounce(26079, 2)
+	local warnPlague                    = mod:NewTargetNoFilterAnnounce(22997, 2)
+	local warnCauseInsanity             = mod:NewTargetNoFilterAnnounce(26079, 2)
 
-	local specWarnPlague				= mod:NewSpecialWarningMoveAway(22997, nil, nil, nil, 1, 2)
-	local yellPlague					= mod:NewYell(22997)
-	local specWarnExplode				= mod:NewSpecialWarningRun(25698, "Melee", nil, 3, 4, 2)
+	local specWarnPlague                = mod:NewSpecialWarningMoveAway(22997, nil, nil, nil, 1, 2)
+	local yellPlague                    = mod:NewYell(22997)
+	local specWarnExplode               = mod:NewSpecialWarningRun(25698, nil, nil, 3, 4, 2)
+
+	local Plague = DBM:GetSpellInfo(22997)
+	local Explode = DBM:GetSpellInfo(25698)
+	local CauseInsanity = DBM:GetSpellInfo(26079)-- aq40 only mind control - qiraji brainwasher/mindslayer
 
 	-- aura applied didn't seem to catch the reflects and other buffs
 	function mod:SPELL_AURA_APPLIED(args)
-		if args.spellId == 22997 then
+		if args.spellName == Plague then
 			if args:IsPlayer() then
 				specWarnPlague:Show()
 				specWarnPlague:Play("runout")
@@ -57,16 +61,16 @@ do-- Anubisath Plague/Explode - keep in sync - AQ40/AQ40Trash.lua AQ20/AQ20Trash
 			else
 				warnPlague:Show(args.destName)
 			end
-		elseif args.spellId == 25698 then
+		elseif args.spellName == Explode then
 			specWarnExplode:Show()
 			specWarnExplode:Play("justrun")
-		elseif args.spellId == 26079 then
+		elseif args.spellName == CauseInsanity then
 			warnCauseInsanity:CombinedShow(0.75, args.destName)
 		end
 	end
 
 	function mod:SPELL_AURA_REMOVED(args)
-		if args.spellId == 22997 then
+		if args.spellName == Plague then
 			if args:IsPlayer() and self.Options.RangeFrame then
 				DBM.RangeCheck:Hide()
 			end
@@ -83,10 +87,10 @@ do
 		local cid = self:GetCIDFromGUID(GUID)
 		if startCreatureIds[cid] then
 			if not self.vb.firstEngageTime then
-				self.vb.firstEngageTime = time()
+				self.vb.firstEngageTime = GetServerTime()
 				if self.Options.FastestClear3 and self.Options.SpeedClearTimer then
 					--Custom bar creation that's bound to core, not mod, so timer doesn't stop when mod stops it's own timers
-					DBT:CreateBar(self.Options.FastestClear3, DBM_CORE_L.SPEED_CLEAR_TIMER_TEXT, "Interface\\Icons\\Spell_Nature_TimeStop")
+					DBT:CreateBar(self.Options.FastestClear3, DBM_CORE_L.SPEED_CLEAR_TIMER_TEXT, 136106)
 				end
 				self:SendSync("AQ40Started", self.vb.firstEngageTime)--Also sync engage time
 			end
@@ -103,8 +107,9 @@ do
 
 	-- todo: thorns
 	local playerGUID = UnitGUID("player")
-	function mod:SPELL_DAMAGE(_, sourceName, _, destGUID, _, _, spellId)
-		if spellId == 26555 and destGUID == playerGUID and self:AntiSpam(3, 3) then
+	local ShadowStorm = DBM:GetSpellInfo(26555)
+	function mod:SPELL_DAMAGE(_, sourceName, _, _, destGUID, _, _, _, _, spellName)
+		if spellName == ShadowStorm and destGUID == playerGUID and self:AntiSpam(3, 3) then
 			specWarnShadowStorm:Show(sourceName)
 			specWarnShadowStorm:Play("findshelter")
 		end
@@ -112,7 +117,7 @@ do
 			checkFirstPull(self, destGUID or 0)
 		end
 	end
-	function mod:SPELL_MISSED(sourceGUID, _, _, destGUID, destName, _, _, _, spellSchool, missType)
+	function mod:SPELL_MISSED(sourceGUID, _, _, _, destGUID, destName, _, _, _, _, spellSchool, missType)
 		if (missType == "REFLECT" or missType == "DEFLECT") and sourceGUID == playerGUID then
 			if (spellSchool == 32 or spellSchool == 16) and self:AntiSpam(3, 1) then
 				specWarnShadowFrostReflect:Show(destName)
@@ -127,24 +132,24 @@ do
 		end
 	end
 
-	function mod:SPELL_PERIODIC_DAMAGE(_, _, _, destGUID)
+	function mod:SPELL_PERIODIC_DAMAGE(_, _, _, _, destGUID)
 		checkFirstPull(self, destGUID or 0)
 	end
 	mod.SPELL_PERIODIC_MISSED = mod.SPELL_PERIODIC_DAMAGE
 
-	function mod:SWING_DAMAGE(_, _, _, destGUID)
+	function mod:SWING_DAMAGE(_, _, _, _, destGUID)
 		checkFirstPull(self, destGUID or 0)
 	end
 	mod.SWING_MISSED = mod.SWING_DAMAGE
 
---[[	local function updateDefeatedBosses(self, encounterId)
+	local function updateDefeatedBosses(self, encounterId)
 		if self:AntiSpam(10, encounterId) then
 			if encounterId == 710 or encounterId == 713 or encounterId == 716 or encounterId == 717 or encounterId == 714 then
 				self.vb.requiredBosses = self.vb.requiredBosses + 1
 				if self.vb.requiredBosses == 5 then
 					DBT:CancelBar(DBM_CORE_L.SPEED_CLEAR_TIMER_TEXT)
 					if self.vb.firstEngageTime then
-						local thisTime = time() - self.vb.firstEngageTime
+						local thisTime = GetServerTime() - self.vb.firstEngageTime
 						if thisTime and thisTime > 0 then
 							if not self.Options.FastestClear3 then
 								--First clear, just show current clear time
@@ -165,18 +170,18 @@ do
 			end
 		end
 	end
- ]]
+
 	function mod:OnSync(msg, timeOrEncounter, sender)
 		--Sync recieved with start time and ours is currently not started
 		--The reason this doesn't just check self.vb.firstEngageTime is nil, because it might not be if SendVariableInfo send it first
-		if msg == "AQ40Started" and timeOrEncounter --[[ and not DBT:GetBar(DBM_CORE_L.SPEED_CLEAR_TIMER_TEXT) ]] then
+		if msg == "AQ40Started" and sender and not DBT:GetBar(DBM_CORE_L.SPEED_CLEAR_TIMER_TEXT) then
 			if not self.vb.firstEngageTime then
 				self.vb.firstEngageTime = tonumber(timeOrEncounter)
 			end
 			if self.Options.FastestClear3 and self.Options.SpeedClearTimer then
 				--Custom bar creation that's bound to core, not mod, so timer doesn't stop when mod stops it's own timers
-				local adjustment = time() - self.vb.firstEngageTime
-				DBT:CreateBar(self.Options.FastestClear3 - adjustment, DBM_CORE_L.SPEED_CLEAR_TIMER_TEXT, "Interface\\Icons\\Spell_Nature_TimeStop")
+				local adjustment = GetServerTime() - self.vb.firstEngageTime
+				DBT:CreateBar(self.Options.FastestClear3 - adjustment, DBM_CORE_L.SPEED_CLEAR_TIMER_TEXT, 136106)
 			end
 			--Unregister high CPU combat log events
 			self:UnregisterShortTermEvents()
@@ -187,17 +192,17 @@ do
 			--This is sadly still going to generate a LOT of comm traffic on zone in. upwards of 4-117 syncs, per player zone in
 			--Reviewing code, it's hard to do this in less comms, it's either don't support recovering the speed clear timer in all situations (disconnect, reloadui, zoning in late) or cause a burst of syncs :\
 			DBM:SendVariableInfo(self, sender)
-		--[[ elseif msg == "EncounterEnd" and timeOrEncounter then
-			updateDefeatedBosses(self, timeOrEncounter)--In case player misses event (ie they released or are outside the raid for that particular boss ]]
+		elseif msg == "EncounterEnd" and timeOrEncounter then
+			updateDefeatedBosses(self, timeOrEncounter)--In case player misses event (ie they released or are outside the raid for that particular boss
 		end
 	end
 
-	--[[function mod:ENCOUNTER_END(encounterId, _, _, _, success)
+	function mod:ENCOUNTER_END(encounterId, _, _, _, success)
 		if success == 0 then return end--wipe
 		--All the required bosses for the raid to be full cleared.
 		if encounterId == 710 or encounterId == 713 or encounterId == 716 or encounterId == 717 or encounterId == 714 then
 			updateDefeatedBosses(self, encounterId)--Still want to fire this on event because the event will always be faster than sync
 			self:SendSync("EncounterEnd", encounterId)
 		end
-	end]]
+	end
 end
