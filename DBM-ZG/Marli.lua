@@ -9,7 +9,7 @@ mod:RegisterCombat("combat")
 mod:RegisterEventsInCombat(
 	"SPELL_AURA_APPLIED 24111 24300 24109",
 	"SPELL_AURA_REMOVED 24111 24300",
-	"SPELL_CAST_SUCCESS 24083"
+	"SPELL_CAST_SUCCESS 24083 24110"
 )
 
 --TODO, enlarge dispel warning valid?
@@ -22,6 +22,7 @@ local specWarnEnlarge	= mod:NewSpecialWarningDispel(24109, "MagicDispeller", nil
 
 local timerDrain		= mod:NewTargetTimer(7, 24300, nil, "RemoveMagic|Healer", nil, 5, nil, DBM_COMMON_L.MAGIC_ICON)
 local timerCorrosive	= mod:NewTargetTimer(30, 24111, nil, "RemovePoison", nil, 5, nil, DBM_COMMON_L.POISON_ICON)
+local timerWeb			= mod:NewTargetTimer(8, 24110, nil, nil, nil, nil, nil, nil)
 
 function mod:SPELL_AURA_APPLIED(args)
 	if args.spellId == 24111 then
@@ -51,5 +52,7 @@ end
 function mod:SPELL_CAST_SUCCESS(args)
 	if args.spellId == 24083 then
 		warnSpiders:Show()
+	elseif args.spellId == 24110 then
+		timerWeb:Show(args.destName)
 	end
 end
