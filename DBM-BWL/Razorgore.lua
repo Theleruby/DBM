@@ -12,13 +12,13 @@ mod:SetWipeTime(180)--guesswork
 
 mod:RegisterEventsInCombat(
 	"SPELL_CAST_START 22425",
-	"SPELL_CAST_SUCCESS 23040 19873",
+	"SPELL_CAST_SUCCESS 23040 19873 23023",
 	"SPELL_AURA_APPLIED 23023",
 	"CHAT_MSG_MONSTER_EMOTE",
+	"CHAT_MSG_MONSTER_YELL",
 	"UNIT_DIED"
 )
 
---ability.id = 22425 and type = "begincast" or (ability.id = 23040 or ability.id = 19873) and type = "cast"
 local warnPhase2			= mod:NewPhaseAnnounce(2)
 local warnFireballVolley	= mod:NewCastAnnounce(22425, 3)
 local warnConflagration		= mod:NewTargetNoFilterAnnounce(23023, 2)
@@ -26,55 +26,64 @@ local warnEggsLeft			= mod:NewCountAnnounce(19873, 1)
 
 local specWarnFireballVolley= mod:NewSpecialWarningMoveTo(22425, false, nil, nil, 2, 2)
 
-local timerAddsSpawn		= mod:NewTimer(47, "TimerAddsSpawn", 19879, nil, nil, 1)--Only for start of adds, not adds after the adds.
+local timerAddsSpawn		= mod:NewTimer(47-2, "TimerAddsSpawn", 19879, nil, nil, 1)--Only for start of adds, not adds after the adds.
+local timerConflagCD		= mod:NewCDTimer(30, 23023, nil, false)
 
-mod:AddSpeedClearOption("BWL", true)
 
 mod.vb.eggsLeft = 30
-mod.vb.firstEngageTime = nil
 
-function mod:OnCombatStart()
+function mod:OnCombatStart(delay)
 	self:SetStage(1)
 	timerAddsSpawn:Start()
 	self.vb.eggsLeft = 30
-	if not self.vb.firstEngageTime then
-		self.vb.firstEngageTime = time()
-		if self.Options.FastestClear and self.Options.SpeedClearTimer then
-			--Custom bar creation that's bound to core, not mod, so timer doesn't stop when mod stops it's own timers
-			DBT:CreateBar(self.Options.FastestClear, DBM_CORE_L.SPEED_CLEAR_TIMER_TEXT, "Interface\\Icons\\Spell_Nature_TimeStop")
+	self.vb.phase = 1
+end
+
+do
+	local fireballVolley = DBM:GetSpellInfo(22425)
+	function mod:SPELL_CAST_START(args)
+		--if args.spellId == 22425 and args:IsDestTypePlayer() then
+		if args.spellName == fireballVolley  then
+			if self.Options.SpecWarn22425moveto then
+				specWarnFireballVolley:Show(DBM_COMMON_L.BREAK_LOS)
+				specWarnFireballVolley:Play("findshelter")
+			else
+				warnFireballVolley:Show()
+			end
 		end
 	end
 end
 
-function mod:SPELL_CAST_START(args)
-	if args.spellId == 23023 and args:IsDestTypePlayer() then
-		if self.Options.SpecWarn22425moveto then
-			specWarnFireballVolley:Show(DBM_COMMON_L.BREAK_LOS)
-			specWarnFireballVolley:Play("findshelter")
-		else
-			warnFireballVolley:Show()
+do
+	local warmingFlames = DBM:GetSpellInfo(23040)
+	function mod:SPELL_CAST_SUCCESS(args)
+		--if args.spellId == 23023 and args:IsDestTypePlayer() then
+		if args.spellName == warmingFlames and self.vb.phase < 2 then
+			warnPhase2:Show()
+			self:SetStage(2)		
 		end
 	end
 end
 
-function mod:SPELL_CAST_SUCCESS(args)
-	if args.spellId == 23040 and self.vb.phase < 2 then
-		warnPhase2:Show()
-		self:SetStage(2)
-	--This may not be accurate, it depends on how large expanded combat log range is
-	elseif args.spellId == 19873 then
+do
+	local Conflagration = DBM:GetSpellInfo(23023)
+	function mod:SPELL_AURA_APPLIED(args)
+		--if args.spellId == 23023 and args:IsDestTypePlayer() then
+		if args.spellName == Conflagration and args:IsDestTypePlayer() then
+			warnConflagration:CombinedShow(0.3, args.destName)
+			timerConflagCD:Start()
+		end
+	end
+end
+
+--For some reason this no longer works
+function mod:CHAT_MSG_MONSTER_YELL(msg)
+	if (msg == L.YellEgg1 or msg == L.YellEgg2 or msg == L.YellEgg3) and self.vb.phase < 2 and self.vb.eggsLeft > 1 then
 		self.vb.eggsLeft = self.vb.eggsLeft - 1
 		warnEggsLeft:Show(string.format("%d/%d",30-self.vb.eggsLeft,30))
 	end
 end
 
-function mod:SPELL_AURA_APPLIED(args)
-	if args.spellId == 23023 and args:IsDestTypePlayer() then
-		warnConflagration:CombinedShow(0.3, args.destName)
-	end
-end
-
---For some reason this no longer works
 function mod:CHAT_MSG_MONSTER_EMOTE(msg)
 	if (msg == L.Phase2Emote or msg:find(L.Phase2Emote)) and self.vb.phase < 2 then
 		self:SendSync("Phase2")
@@ -96,5 +105,6 @@ function mod:OnSync(msg)
 	if msg == "Phase2" and self.vb.phase < 2 then
 		warnPhase2:Show()
 		self:SetStage(2)
+		timerConflagCD:Start(12)
 	end
 end
