@@ -24,25 +24,37 @@ local yellOrder			= mod:NewYell(25471)
 local timerOrder		= mod:NewTargetTimer(10, 25471, nil, nil, nil, 3)
 local timerCloud		= mod:NewBuffActiveTimer(15, 26550, nil, nil, nil, 3)--? Good color?
 
-function mod:SPELL_AURA_APPLIED(args)
-	if args.spellId == 25471 then
-		timerOrder:Start(args.destName)
-		if args:IsPlayer() then
-			specWarnOrder:Show()
-			specWarnOrder:Play("targetyou")
-			yellOrder:Yell()
-		else
-			warnOrder:Show(args.destName)
+local timerThundercrashCD	= mod:NewCDTimer(21, 25599, nil, nil, nil, 3)
+
+do
+	local AttackOrder = DBM:GetSpellInfo(25471)
+	function mod:SPELL_AURA_APPLIED(args)
+		--if args.spellId == 25471 then
+		if args.spellName == AttackOrder then
+			timerOrder:Start(args.destName)
+			if args:IsPlayer() then
+				specWarnOrder:Show()
+				specWarnOrder:Play("targetyou")
+				yellOrder:Yell()
+			else
+				warnOrder:Show(args.destName)
+			end
 		end
 	end
 end
 
-function mod:SPELL_CAST_SUCCESS(args)
-	if args.spellId == 26550 then
-		warnCloud:Show()
-		timerCloud:Start()
-	elseif args.spellId == 25599 then
-		warnThundercrash:Show()
+do
+	local LightningCloud, Thundercrash = DBM:GetSpellInfo(26550), DBM:GetSpellInfo(25599)
+	function mod:SPELL_CAST_SUCCESS(args)
+		--if args.spellId == 26550 then
+		if args.spellName == LightningCloud then
+			warnCloud:Show()
+			timerCloud:Start()
+		--elseif args.spellId == 25599 then
+		elseif args.spellName == Thundercrash then
+			warnThundercrash:Show()
+			timerThundercrashCD:Start()
+		end
 	end
 end
 
@@ -65,7 +77,7 @@ function mod:CHAT_MSG_MONSTER_YELL(msg)--some of these yells have line breaks th
 end
 
 function mod:OnSync(msg, count)
-	if DBM:GetCurrentArea() ~= 509 then return end--Block syncs if not in the zone
+--	if DBM:GetCurrentArea() ~= 509 OR DBM:GetCurrentArea() ~= 3429 then return end--Block syncs if not in the zone
 	if msg == "Wave" then
 		warnWave:Show(count)
 	end

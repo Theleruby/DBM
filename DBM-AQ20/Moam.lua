@@ -12,10 +12,6 @@ mod:RegisterEventsInCombat(
 	"SPELL_AURA_REMOVED 25685"
 )
 
---Energize is mode boss goes in during Summon Mana Fiend Phase
---TODO, update timrs on mana drains/etc
---TODO, verify if arcane eruption wll always be the same
---"Arcane Eruption-25672-npc:15340 = pull:325.8", -- [1]
 local warnEnergize		= mod:NewSpellAnnounce(25685, 3)
 
 local timerEnergize		= mod:NewNextTimer(90, 25685, nil, nil, nil, 6)
@@ -25,16 +21,21 @@ function mod:OnCombatStart(delay)
 	timerEnergize:Start(-delay)
 end
 
-function mod:SPELL_AURA_APPLIED(args)
-	if args.spellId == 25685 and args:IsDestTypeHostile() then
-		warnEnergize:Show()
-		timerEnergizeDur:Start()
+do
+	local Energize = DBM:GetSpellInfo(25685)
+	function mod:SPELL_AURA_APPLIED(args)
+		--if args.spellId == 25685 then
+		if args.spellName == Energize and args:IsDestTypeHostile() then
+			warnEnergize:Show()
+			timerEnergizeDur:Start()
+		end
 	end
-end
 
-function mod:SPELL_AURA_REMOVED(args)
-	if args.spellId == 25685 and args:IsDestTypeHostile() then
-		timerEnergizeDur:Stop()
-		timerEnergize:Start()
+	function mod:SPELL_AURA_REMOVED(args)
+		--if args.spellId == 25685 then
+		if args.spellName == Energize and args:IsDestTypeHostile() then
+			timerEnergizeDur:Stop()
+			timerEnergize:Start()
+		end
 	end
 end

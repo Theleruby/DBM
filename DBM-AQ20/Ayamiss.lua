@@ -10,12 +10,15 @@ mod:RegisterCombat("combat")
 mod:RegisterEventsInCombat(
 	"SPELL_AURA_APPLIED 25725 8269",
 	"SPELL_AURA_REMOVED 25725",
-	"UNIT_HEALTH mouseover target"
+	"UNIT_HEALTH mouseover target focus"
+--	,
+--	"SPELL_CAST_SUCCESS 26538 26539"
 )
 
 local warnPhase2	= mod:NewPhaseAnnounce(2)
 local warnParalyze	= mod:NewTargetNoFilterAnnounce(25725, 3)
 local warnEnrage	= mod:NewTargetNoFilterAnnounce(8269, 3)
+local warnLarve		= mod:NewAnnounce("Larve spawned", 2, "Interface\\Icons\\Ability_Warrior_OffensiveStance")
 
 local timerParalyze	= mod:NewTargetTimer(10, 25725, nil, nil, nil, 3)
 
@@ -23,18 +26,24 @@ function mod:OnCombatStart()
 	self:SetStage(1)
 end
 
-function mod:SPELL_AURA_APPLIED(args)
-	if args.spellId == 25725 then
-		warnParalyze:Show(args.destName)
-		timerParalyze:Start(args.destName)
-	elseif args.spellId == 8269 and args:IsDestTypeHostile() then
-		warnEnrage:Show(args.destName)
+do
+	local Paralyze, Enrage = DBM:GetSpellInfo(25725), DBM:GetSpellInfo(8269)
+	function mod:SPELL_AURA_APPLIED(args)
+		--if args.spellId == 25725 then
+		if args.spellName == Paralyze then
+			warnParalyze:Show(args.destName)
+			timerParalyze:Start(args.destName)
+			warnLarve:Show()
+		elseif args.spellName == Enrage and args:IsDestTypeHostile() then
+			warnEnrage:Show(args.destName)
+		end
 	end
-end
 
-function mod:SPELL_AURA_REMOVED(args)
-	if args.spellId == 25725 then
-		timerParalyze:Stop(args.destName)
+	function mod:SPELL_AURA_REMOVED(args)
+		--if args.spellId == 25725 then
+		if args.spellName == Paralyze then
+			timerParalyze:Stop(args.destName)
+		end
 	end
 end
 
