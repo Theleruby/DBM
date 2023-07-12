@@ -18,6 +18,7 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	DBM_MAG_EMOTE_PULL		= "%s의 속박이 약해지기 시작합니다!",
+	DBM_MAG_EMOTE_PHASE1	= "<Insert translation>",
 	DBM_MAG_YELL_PHASE2		= "내가... 풀려났도다!",
 	DBM_MAG_YELL_PHASE3		= "그렇게 쉽게 당할 내가 아니다! 이 감옥의 벽이 흔들리고... 무너지리라!"
 })

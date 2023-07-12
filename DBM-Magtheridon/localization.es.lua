@@ -18,6 +18,7 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	DBM_MAG_EMOTE_PULL		= "¡Las cuerdas de %s empiezan a aflojarse!",
+	DBM_MAG_EMOTE_PHASE1	= "<Insert translation>",
 	DBM_MAG_YELL_PHASE2		= "¡He... sido... liberado!",
 	DBM_MAG_YELL_PHASE3		= "¡No me dejaré encerrar tan fácilmente! ¡Que tiemblen las paredes de esta prisión... y se derrumben!"
 })

@@ -19,6 +19,7 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	DBM_MAG_EMOTE_PULL		= "Сдерживающая сила %sа начинает ослабевать!",
+	DBM_MAG_EMOTE_PHASE1	= "<Insert translation>",
 	DBM_MAG_YELL_PHASE2		= "Я... свободен!",
 	DBM_MAG_YELL_PHASE3		= "Пусть стены темницы содрогнутся... и падут!"
 })
