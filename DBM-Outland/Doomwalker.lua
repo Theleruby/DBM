@@ -20,11 +20,11 @@ local timerChargeCD			= mod:NewCDTimer(42-17, 32637, nil, nil, nil, 3)
 local timerQuakeCD			= mod:NewCDTimer(52-22, 32686, nil, nil, nil, 2)
 local timerQuake			= mod:NewBuffActiveTimer(8, 32686, nil, nil, nil, 2)
 
-mod:AddRangeFrameOption("12") -- ChromieCraft adjustment because hitbox is calculated from outer border of char instead of center point
+mod:AddRangeFrameOption("13") -- ChromieCraft adjustment because hitbox is calculated from outer border of char instead of center point
 
 function mod:OnCombatStart()
 	if self.Options.RangeFrame then
-		DBM.RangeCheck:Show(10+2)
+		DBM.RangeCheck:Show(10+3)
 	end
 end
 
