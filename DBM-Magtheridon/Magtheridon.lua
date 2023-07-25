@@ -30,7 +30,7 @@ local timerBlastNovaCD		= mod:NewCDCountTimer(54-1, 30616, nil, nil, nil, 2, nil
 local timerDebris			= mod:NewNextTimer(15, 36449, nil, nil, nil, 2, nil, DBM_COMMON_L.HEALER_ICON..DBM_COMMON_L.TANK_ICON)--Only happens once per fight, after the phase 3 yell.
 -- quake cannot be detected properly yet
 local timerQuake			= mod:NewCastTimer(7, 30657, nil, nil, nil)
-local timerQuakeCD			= mod:NewCDTimer(53, 30657, nil, nil, nil, 2)
+local timerQuakeCD			= mod:NewCDTimer(53-7, 30657, nil, nil, nil, 2)
 local specWarnGTFO			= mod:NewSpecialWarningGTFO(30757, nil, nil, nil, 1, 8)
 
 mod.vb.blastNovaCounter = 1
@@ -60,6 +60,7 @@ do
 			self.vb.blastNovaCounter = self.vb.blastNovaCounter + 1
 			specWarnBlastNova:Show(L.name)
 			specWarnBlastNova:Play("kickcast")
+			timerQuakeCD:Start()
 			timerBlastNovaCD:Start(nil, self.vb.blastNovaCounter)
 		end
 	end
@@ -99,24 +100,16 @@ do
 		if msg == L.DBM_MAG_YELL_PHASE2 or msg:find(L.DBM_MAG_YELL_PHASE2) then
 			self:SetStage(2)
 			warnPhase2:Show()
-			timerQuakeCD:Start(40)
-			timerBlastNovaCD:Start(47, self.vb.blastNovaCounter)
+			timerQuakeCD:Start(40+3)
+			timerBlastNovaCD:Start(47+3, self.vb.blastNovaCounter)
 			timerPhase2:Cancel()
 		elseif msg == L.DBM_MAG_YELL_PHASE3 or msg:find(L.DBM_MAG_YELL_PHASE3) then
 			self:SetStage(3)
 			warnPhase3:Show()
 			timerBlastNovaCD:AddTime(18, self.vb.blastNovaCounter)
+			timerQuakeCD:AddTime(18)
 			timerDebris:Start()
 		end
 	end
 	
-	function mod:CHAT_MSG_MONSTER_EMOTE(msg)
-		if msg == L.DBM_MAG_EMOTE_PHASE1 or msg:find(L.DBM_MAG_EMOTE_PHASE1) then
-			self:SetStage(2)
-			warnPhase2:Schedule(3)
-			timerQuakeCD:Start(40+3)
-			timerBlastNovaCD:Start(47+3, self.vb.blastNovaCounter)
-			--timerPhase2:Cancel()
-		end
-	end
 end
