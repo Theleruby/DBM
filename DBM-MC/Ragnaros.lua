@@ -19,14 +19,15 @@ mod:RegisterEventsInCombat(
 	"UNIT_DIED"
 )
 
-local warnWrathRag		= mod:NewSpellAnnounce(20566, 3)
-local warnSubmerge		= mod:NewAnnounce("WarnSubmerge", 2, "Interface\\AddOns\\DBM-Core\\textures\\CryptFiendBurrow.blp")
-local warnEmerge		= mod:NewAnnounce("WarnEmerge", 2, "Interface\\AddOns\\DBM-Core\\textures\\CryptFiendUnBurrow.blp")
+local warnWrathRag			= mod:NewSpellAnnounce(20566, 3)
+local warnSubmerge			= mod:NewSpellAnnounce(21107, 2, "Interface\\AddOns\\DBM-Core\\textures\\CryptFiendBurrow.blp")
+local warnEmerge			= mod:NewSpellAnnounce(20568, 2, "Interface\\AddOns\\DBM-Core\\textures\\CryptFiendUnBurrow.blp")
+local warnSonsOfFlameLeft	= mod:NewAddsLeftAnnounce(19629, 2, 19774) -- spellId 21108 (Summon of Sons of Flame) returns nil, so use a similar spellId: 19629 (Summon Flames)
 
-local timerWrathRag		= mod:NewCDTimer(25, 20566, nil, nil, nil, 2, nil, DBM_COMMON_L.IMPORTANT_ICON, nil, mod:IsMelee() and 1, 4)--25-31.6
-local timerSubmerge		= mod:NewTimer(180, "TimerSubmerge", "Interface\\AddOns\\DBM-Core\\textures\\CryptFiendBurrow.blp", nil, nil, 6, nil, nil, 1, 5)
-local timerEmerge		= mod:NewTimer(90, "TimerEmerge", "Interface\\AddOns\\DBM-Core\\textures\\CryptFiendUnBurrow.blp", nil, nil, 6, nil, nil, 1, 5)
-local timerCombatStart	= mod:NewTimer(78+2, "timerCombatStart", "Interface\\Icons\\Ability_Warrior_OffensiveStance", nil, nil, 6, nil, nil) -- 72.5
+local timerWrathRag			= mod:NewCDTimer(25, 20566, nil, nil, nil, 2, nil, DBM_COMMON_L.IMPORTANT_ICON, nil, mod:IsMelee() and 1, 4)--25-31.6
+local timerSubmerge			= mod:NewNextTimer(180, 21107, nil, nil, nil, 6, "Interface\\AddOns\\DBM-Core\\textures\\CryptFiendBurrow.blp", nil, nil, 1, 5)
+local timerEmerge			= mod:NewNextTimer(90, 20568, nil, nil, nil, 6, "Interface\\AddOns\\DBM-Core\\textures\\CryptFiendUnBurrow.blp", nil, nil, 1, 5)
+local timerCombatStart		= mod:NewCombatTimer(78+2) -- 72.5
 
 mod:AddRangeFrameOption("20") -- Blizz 18, AzerothCore +2 for regular chars, or 4 for male tauren/draenei
 
@@ -38,7 +39,7 @@ local firstBossMod = DBM:GetModByName("MCTrash")
 function mod:OnCombatStart(delay)
 	table.wipe(addsGuidCheck)
 	self.vb.addLeft = 0
-	self.vb.ragnarosEmerged = true
+	--self.vb.ragnarosEmerged = true
 	timerWrathRag:Start(26.7+3.3-delay)
 	timerSubmerge:Start(180-delay)
 	if self.Options.RangeFrame then
@@ -117,6 +118,7 @@ function mod:UNIT_DIED(args)
 		if not addsGuidCheck[guid] then
 			addsGuidCheck[guid] = true
 			self.vb.addLeft = self.vb.addLeft - 1
+			warnSonsOfFlameLeft:Show(self.vb.addLeft)
 			if not self.vb.ragnarosEmerged and self.vb.addLeft == 0 then--After all 8 die he emerges immediately
 				self:Unschedule(emerged)
 				emerged(self)
